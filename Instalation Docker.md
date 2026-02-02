@@ -1,6 +1,6 @@
 # Installing Docker on Ubuntu
 
-This guide shows how to install the current stable version of **Docker Engine** on Ubuntu (20.04 / 22.04 / 24.04 LTS recommended).
+This guide shows how to install the current stable version of **Docker Engine** on Ubuntu
 
 ### 1. Uninstall old / conflicting versions (if any)
 
@@ -35,10 +35,8 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plug
 ``` bash
 # Version check
 docker --version
-docker compose version    # Note: modern "docker compose" (not "docker-compose")
-
-# Quick test
-sudo docker run --rm hello-world
+docker compose version
+docker ps
 ```
 ### 7. (Recommended) Add your user to the docker group
 ``` bash
@@ -46,12 +44,7 @@ sudo usermod -aG docker $USER
 newgrp docker
 # or simply log out and log back in
 ```
-After this step you should be able to run:
-``` bash
-docker run --rm hello-world
-docker ps
-docker compose version
-```
+
 ### Optional – Enable Docker to start on boot
 ``` bash
 sudo systemctl enable docker
@@ -63,7 +56,9 @@ docker info
 docker version --format '{{.Server.Version}}'
 systemctl status docker
 journalctl -u docker -n 200 --no-pager
+systemctl restart docker
 ```
 That's it! 🐳
 You now have up-to-date Docker + Compose on Ubuntu.
+
 Good luck with the repository! 🚀

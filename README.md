@@ -11,6 +11,8 @@ Modern, secure & production-ready Dockerfiles • docker-compose setups • best
   Multi-stage • distroless • rootless • security-focused • multi-platform friendly
 </p>
 
+
+
 ## ✨ Features
 
 - Production-grade multi-stage build examples  
@@ -18,6 +20,18 @@ Modern, secure & production-ready Dockerfiles • docker-compose setups • best
 - docker-compose setups for local development & testing  
 - Healthchecks, .dockerignore, labels & best practices included  
 - Examples for popular stacks 
+
+
+
+
+## 📚 Official Resources
+
+- 📘 **Documentation** — Comprehensive guides, references, CLI docs, and best practices  [docs.docker.com](https://docs.docker.com/)
+
+- 🧰 **Docker Hub** — The world's largest container registry: search, pull & push images [hub.docker.com](https://hub.docker.com/)
+  
+
+
 
 ## 📂 Repository Structure
 

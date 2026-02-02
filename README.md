@@ -1,4 +1,4 @@
-# Docker
+# Docker 🐳
 Modern, secure & production-ready Dockerfiles • docker-compose setups • best practices
 
 <p align="center">

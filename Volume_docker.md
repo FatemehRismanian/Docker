@@ -1,5 +1,3 @@
-These are the most frequently used patterns for volumes in Docker.
-
 Here are several practical samples of how to create and use Docker volumes, from basic to more realistic scenarios.
 
 ## 1. Basic named volume (most common & recommended)
@@ -38,12 +36,12 @@ docker run -d --name mysql-test \
   mysql:8
 ```
 Docker creates volume mysql-data automatically.
+
 Data survives even if you docker rm mysql-test and start a new one with the same volume.
 
 ## 3. Read-only volume mount example
 ```
 docker volume create static-files
-
 docker run -d -p 8080:80 \
   -v static-files:/usr/share/nginx/html:ro \
   nginx:alpine
@@ -55,7 +53,6 @@ Nginx serves files read-only from the volume (good for shared config/static asse
 ```
 docker volume create logs
 docker volume create config
-
 docker run -it --rm \
   -v logs:/var/log/app \
   -v config:/etc/app:ro \
@@ -64,7 +61,7 @@ docker run -it --rm \
 
 Inside:
 ```
-touch /var/log/app/debug.log       # works
+touch /var/log/app/debug.log                # works
 echo "setting=prod" > /etc/app/config.ini   # fails → Read-only file system
 ```
 ## 5. Simple docker-compose.yml sample with volumes
@@ -77,7 +74,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - html-content:/usr/share/nginx/html:ro     # read-only site files
+      - html-content:/usr/share/nginx/html:ro             # read-only site files
       - ./custom.conf:/etc/nginx/conf.d/default.conf:ro   # bind mount for config
 
   logger:
@@ -90,17 +87,19 @@ volumes:
   html-content:     # named volume
   logs:             # another named volume
   ```
-Run → docker compose up -d
+```
+docker compose up -d
+```
 Two services share persistent storage via named volumes.
 
-### 6. Create and use an NFS-backed Docker volume.(practical)
+### 6. Create and use an NFS-backed Docker volume(practical)
 Docker supports mounting NFS shares as volumes using the built-in local driver.
 
 Prerequisites:
-An NFS server is already running and exporting a share
-Your Docker host has NFS client support installed (nfs-common on Debian/Ubuntu, nfs-utils on CentOS/RHEL/Fedora)
-The Docker host can reach the NFS server (firewall, network, exports allowed)
-Know the NFS server IP and exported path (e.g. 192.168.50.10:/exports/data)
+- NFS server is already running and exporting a share
+- Your Docker host has NFS client support installed (nfs-common on Debian/Ubuntu, nfs-utils on CentOS/RHEL/Fedora)
+- The Docker host can reach the NFS server (firewall, network, exports allowed)
+- Know the NFS server IP and exported path (e.g. 192.168.50.10:/exports/data)
 
 Step 1 – Create the NFS volume
 ```
@@ -114,23 +113,23 @@ docker volume create ${VOLUME_NAME} \
   --opt type=nfs \
   --opt o=addr=${NFS_SERVER},rw,nfsvers=4,soft,timeo=100 \
   --opt device=:${EXPORT_PATH}
-Common useful mount options (o=...):
-
-rw          → read-write (use ro if read-only needed)
-nfsvers=4   → prefer NFSv4 (more reliable; omit for NFSv3)
-soft        → don't hang forever if server disappears
-timeo=100   → timeout in 1/10 seconds
-retrans=5   → retry count
-nolock      → sometimes needed for older servers
-noatime     → performance tweak
 ```
+Common useful mount options (o=...):
+- rw          → read-write (use ro if read-only needed)
+- nfsvers=4   → prefer NFSv4 (more reliable; omit for NFSv3)
+- soft        → don't hang forever if server disappears
+- timeo=100   → timeout in 1/10 seconds
+- retrans=5   → retry count
+- nolock      → sometimes needed for older servers
+- noatime     → performance tweak
+
 Check it worked:
 ```
 docker volume ls | grep nfs-shared
-
 docker volume inspect nfs-shared
 ```
 You should see Mountpoint pointing to a /var/lib/docker/volumes/... location, but it's actually an NFS mount.
+
 Step 2 – Use the NFS volume in a container
 Simple test with busybox:
 ```
@@ -149,8 +148,9 @@ ls -la /data
 # Create more files / directories
 mkdir /data/backups
 touch /data/backups/important.db
-Exit the container (exit) — the files remain on the NFS server.
 ```
+Exit the container (exit) — the files remain on the NFS server.
+
 Step 3 – Real-world example with docker-compose (recommended)
 ```
 YAMLversion: "3.8"
@@ -187,4 +187,5 @@ docker compose up -d
 ```
 Now:
 Nginx serves static files directly from the NFS share (read-only)
+
 The writer container appends logs to the same NFS location

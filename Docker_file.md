@@ -47,6 +47,27 @@ ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["node", "dist/server.js"]
 ```
+#### Build and Run & Test
+```
+cd /path/to/your/project
+ls -la
+# You should see (at minimum): Dockerfile, package.json (possibly package-lock.json), src/  (or other source folders)
+
+docker build -t my-node-app:prod .
+docker images
+
+docker run -d \
+  --name my-app \
+  -p 3000:3000 \
+  my-node-app:prod
+
+#Test that it works Browser:
+http://localhost:3000
+
+# or via terminal:
+curl http://localhost:3000
+
+```
 ### 2- Python (FastAPI / Flask / Django)
 ```
 # Use slim variant when possible
@@ -68,14 +89,15 @@ RUN apt-get update && \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies first
+# Copy and install Python dependencies first (great for caching)
 COPY requirements.txt .
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Create non-root user
+# Create non-root user (good security practice)
 RUN useradd --create-home appuser
 USER appuser
 
@@ -85,10 +107,48 @@ EXPOSE 8000
 # Start the application (examples)
 # FastAPI / Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-# Flask / Gunicorn
+
+# Flask / Gunicorn (uncomment if using Flask instead)
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
 ```
+#### Minimal FastAPI example (main.py):
+```
+from fastapi import FastAPI
 
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello from Docker + FastAPI!"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+```
+#### Build & Run & Test
+```
+cd /path/to/your/python-project
+ls -la           # Should show at least: Dockerfile  requirements.txt  main.py  (or app.py)
+docker build -t my-python-api:prod .
+docker images
+
+docker run -d \
+  --name python-api \
+  -p 8000:8000 \
+  my-python-api:prod
+
+# Basic endpoint
+curl http://localhost:8000
+
+# Health check (if you added it)
+curl http://localhost:8000/health
+
+# Basic endpoint
+curl http://localhost:8000
+
+# Health check (if you added it)
+curl http://localhost:8000/health
+```
 ### 3- Very Minimal Static Site (Nginx)
 ```
 # Build stage (if you use something like Vite, Next.js static export, etc.)
@@ -114,4 +174,38 @@ EXPOSE 80
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
 
+```
+### Sample package.json
+```
+{
+  "name": "my-static-site",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
+```
+#### Build & Run & Test
+```
+docker build -t my-static-site .
+
+# Basic run
+docker run -d -p 8080:80 --name static-site my-static-site
+
+# With volume for development (hot reload):
+docker run -d -p 8080:80 \
+  -v $(pwd)/dist:/usr/share/nginx/html \
+  --name static-site my-static-site
+
+# Production with restart policy:
+docker run -d -p 80:80 \
+  --restart unless-stopped \
+  --name static-site-prod my-static-site
+
+docker logs static-site
 ```
